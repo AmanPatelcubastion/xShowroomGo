@@ -75,6 +75,7 @@ var Schema = `
 	type Device {
 		id: ID!
 		device_uuid: String!
+		user: User!
 	}
 	input DeviceInput {
 		id: ID!
@@ -98,6 +99,7 @@ type userInput struct {
 type x_device struct {
 	id          graphql.ID
 	device_uuid string
+	user        *x_user
 }
 
 type deviceInput struct {
@@ -118,14 +120,12 @@ var devices = []*x_device{
 
 var users = []*x_user{
 	{
-		id:     "101",
-		name:   "Aatish",
-		device: devices[0],
+		id:   "101",
+		name: "Aatish",
 	},
 	{
-		id:     "102",
-		name:   "Vibhanshu",
-		device: devices[1],
+		id:   "102",
+		name: "Vibhanshu",
 	},
 	{
 		id:   "103",
@@ -138,12 +138,22 @@ var userData = make(map[graphql.ID]*x_user)
 var deviceData = make(map[graphql.ID]*x_device)
 
 func init() {
-	for _, user := range users {
+
+	// create sample data
+	for i, user := range users {
 		userData[user.id] = user
+
+		if len(devices) > i {
+			userData[user.id].device = devices[i] //add devices to users (temp, db joins will generate this)
+		}
 	}
 
-	for _, device := range devices {
+	for i, device := range devices {
 		deviceData[device.id] = device
+
+		if len(users) > i {
+			deviceData[device.id].user = users[i] //add users to device (temp, db joins will generate this)
+		}
 	}
 }
 
@@ -239,4 +249,11 @@ func (r *deviceResolver) ID() graphql.ID {
 
 func (r *deviceResolver) DeviceUuid() string {
 	return r.device.device_uuid
+}
+
+func (r *deviceResolver) User() *userResolver {
+	if r.device.user == nil {
+		return &userResolver{&x_user{}}
+	}
+	return &userResolver{r.device.user}
 }
