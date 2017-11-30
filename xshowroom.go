@@ -29,12 +29,17 @@ var Schema = `
 	# The mutation type, represents all updates we can make to our data
 	type Mutation {
 		createDevice(device: DeviceInput!): Device
+		createUser(user: UserInput!): User
 	}
 
 	type User {
 		id: ID!
 		name: String!
 		device: Device!
+	}
+	input UserInput {
+		id: ID!
+		name: String!
 	}
 
 	type Device {
@@ -52,6 +57,11 @@ type x_user struct {
 	id     graphql.ID
 	name   string
 	device x_device
+}
+
+type userInput struct {
+	Id   graphql.ID
+	Name string
 }
 
 type x_device struct {
@@ -134,6 +144,19 @@ func (r *Resolver) CreateDevice(args *struct {
 
 	deviceData[device.id] = device
 	return &deviceResolver{deviceData[device.id]}
+}
+
+func (r *Resolver) CreateUser(args *struct {
+	User *userInput
+}) *userResolver {
+
+	user := &x_user{
+		id:   args.User.Id,
+		name: args.User.Name,
+	}
+
+	userData[user.id] = user
+	return &userResolver{userData[user.id]}
 }
 
 //==================		User		===========================
