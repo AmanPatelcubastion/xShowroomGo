@@ -61,6 +61,7 @@ var Schema = `
 		createUser(user: UserInput!): User
 	}
 
+	# The individual using xShowroom application
 	type User {
 		id: ID!
 		name: String!
@@ -72,6 +73,7 @@ var Schema = `
 		device: DeviceInput!
 	}
 
+	# The Android or I-pad device used by a user
 	type Device {
 		id: ID!
 		device_uuid: String!
@@ -83,7 +85,7 @@ var Schema = `
 	}
 
 `
-
+//=======================		Types 		=====================================
 type x_user struct {
 	id     graphql.ID
 	name   string
@@ -107,6 +109,8 @@ type deviceInput struct {
 	Device_uuid string
 }
 
+
+//========================		Sample Data		======================================
 var devices = []*x_device{
 	{
 		id:          "201",
@@ -157,6 +161,7 @@ func init() {
 	}
 }
 
+//============================		Resolver types		===================================
 type Resolver struct{}
 
 type userResolver struct {
@@ -167,7 +172,7 @@ type deviceResolver struct {
 	device *x_device
 }
 
-//======================		query		===============================
+//======================		Query	methods		===============================
 
 func (r *Resolver) User(args struct{ ID graphql.ID }) []*userResolver {
 	var l []*userResolver
@@ -193,7 +198,7 @@ func (r *Resolver) Device(args struct{ ID graphql.ID }) []*deviceResolver {
 	return d
 }
 
-//======================		mutation		===============================
+//======================		Mutation	methods		===============================
 
 func (r *Resolver) CreateDevice(args *struct {
 	Device *deviceInput
@@ -225,7 +230,8 @@ func (r *Resolver) CreateUser(args *struct {
 	return &userResolver{userData[user.id]}
 }
 
-//==================		User		===========================
+
+//==================		User fields resolvers		===========================
 
 func (r *userResolver) ID() graphql.ID {
 	return r.user.id
@@ -242,7 +248,8 @@ func (r *userResolver) Device() *deviceResolver {
 	return &deviceResolver{r.user.device}
 }
 
-//==================		Device		===========================
+
+//==================		Device	fields resolvers	===========================
 func (r *deviceResolver) ID() graphql.ID {
 	return r.device.id
 }
