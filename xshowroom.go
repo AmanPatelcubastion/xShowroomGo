@@ -37,7 +37,6 @@
 //		   }
 //		}
 
-
 package xShowroom
 
 import (
@@ -53,6 +52,7 @@ var Schema = `
 	# The query type, represents all of the entry points into our object graph
 	type Query {
 		user(id: ID!) : [User]!
+		device(id: ID!) : [Device]!
 	}
 
 	# The mutation type, represents all updates we can make to our data
@@ -141,6 +141,10 @@ func init() {
 	for _, user := range users {
 		userData[user.id] = user
 	}
+
+	for _, device := range devices {
+		deviceData[device.id] = device
+	}
 }
 
 type Resolver struct{}
@@ -165,6 +169,18 @@ func (r *Resolver) User(args struct{ ID graphql.ID }) []*userResolver {
 		l = append(l, &userResolver{val})
 	}
 	return l
+}
+
+func (r *Resolver) Device(args struct{ ID graphql.ID }) []*deviceResolver {
+	var d []*deviceResolver
+	if args.ID != "" {
+		d = append(d, &deviceResolver{deviceData[args.ID]})
+		return d
+	}
+	for _, val := range deviceData {
+		d = append(d, &deviceResolver{val})
+	}
+	return d
 }
 
 //======================		mutation		===============================
