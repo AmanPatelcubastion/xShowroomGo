@@ -210,6 +210,9 @@ func (r *userResolver) Name() string {
 }
 
 func (r *userResolver) Device() *deviceResolver {
+	if r.user.device == nil {
+		return &deviceResolver{&x_device{}}
+	}
 	return &deviceResolver{r.user.device}
 }
 
