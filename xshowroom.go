@@ -1,14 +1,43 @@
 //Sample query on graphiql
 //
+//	1)	Query users with id
 //	{user(id:"101") {
 //		id
 //		name
 //	}}
 //
+//	2)	Query all users
 //	{user(id:"") {
 //		id
 //		name
 //	}}
+//
+//	3)  Upsert user without device
+//	mutation{
+//		createUser(user:{
+//		id:"104"
+//		name:"Sample"
+//		}){
+//			id
+//			}
+//		}
+//
+//  4) Upsert user with device
+//	mutation{
+//		createUser(user:{
+//			id:"104"
+//			name:"Sample"
+//			device:{
+//				id:"204"
+//				device_uuid:"DUVBSJDKNVJU3874VBHJHDFK"
+//			}
+//		}){
+//			id
+//			name
+//		   }
+//		}
+
+
 package xShowroom
 
 import (
@@ -40,6 +69,7 @@ var Schema = `
 	input UserInput {
 		id: ID!
 		name: String!
+		device: DeviceInput!
 	}
 
 	type Device {
@@ -56,12 +86,13 @@ var Schema = `
 type x_user struct {
 	id     graphql.ID
 	name   string
-	device x_device
+	device *x_device
 }
 
 type userInput struct {
-	Id   graphql.ID
-	Name string
+	Id     graphql.ID
+	Name   string
+	Device deviceInput
 }
 
 type x_device struct {
@@ -74,22 +105,27 @@ type deviceInput struct {
 	Device_uuid string
 }
 
-var users = []*x_user{
+var devices = []*x_device{
 	{
-		id:   "101",
-		name: "Aatish",
-		device: x_device{
-			id:          "201",
-			device_uuid: "SJBCVU273F83CGU3",
-		},
+		id:          "201",
+		device_uuid: "SJBCVU273F83CGU3",
 	},
 	{
-		id:   "102",
-		name: "Vibhanshu",
-		device: x_device{
-			id:          "202",
-			device_uuid: "23FGHKJBVDJVNKDJNV",
-		},
+		id:          "202",
+		device_uuid: "FBEUVIWU3784HFBV",
+	},
+}
+
+var users = []*x_user{
+	{
+		id:     "101",
+		name:   "Aatish",
+		device: devices[0],
+	},
+	{
+		id:     "102",
+		name:   "Vibhanshu",
+		device: devices[1],
 	},
 	{
 		id:   "103",
@@ -153,6 +189,10 @@ func (r *Resolver) CreateUser(args *struct {
 	user := &x_user{
 		id:   args.User.Id,
 		name: args.User.Name,
+		device: &x_device{
+			id:          args.User.Device.Id,
+			device_uuid: args.User.Device.Device_uuid,
+		},
 	}
 
 	userData[user.id] = user
@@ -170,7 +210,7 @@ func (r *userResolver) Name() string {
 }
 
 func (r *userResolver) Device() *deviceResolver {
-	return &deviceResolver{&r.user.device}
+	return &deviceResolver{r.user.device}
 }
 
 //==================		Device		===========================
