@@ -11,16 +11,24 @@
 //	}}
 package xShowroom
 
-import "github.com/neelance/graphql-go"
+import (
+	"github.com/neelance/graphql-go"
+)
 
 var Schema = `
 	schema {
 		query: Query
+		mutation: Mutation
 	}
 
 	# The query type, represents all of the entry points into our object graph
 	type Query {
 		user(id: ID!) : [User]!
+	}
+
+	# The mutation type, represents all updates we can make to our data
+	type Mutation {
+		createDevice(device: DeviceInput!): Device
 	}
 
 	type User {
@@ -30,6 +38,10 @@ var Schema = `
 	}
 
 	type Device {
+		id: ID!
+		device_uuid: String!
+	}
+	input DeviceInput {
 		id: ID!
 		device_uuid: String!
 	}
@@ -45,6 +57,11 @@ type x_user struct {
 type x_device struct {
 	id          graphql.ID
 	device_uuid string
+}
+
+type deviceInput struct {
+	Id          graphql.ID
+	Device_uuid string
 }
 
 var users = []*x_user{
@@ -72,6 +89,8 @@ var users = []*x_user{
 
 var userData = make(map[graphql.ID]*x_user)
 
+var deviceData = make(map[graphql.ID]*x_device)
+
 func init() {
 	for _, user := range users {
 		userData[user.id] = user
@@ -88,6 +107,8 @@ type deviceResolver struct {
 	device *x_device
 }
 
+//======================		query		===============================
+
 func (r *Resolver) User(args struct{ ID graphql.ID }) []*userResolver {
 	var l []*userResolver
 	if args.ID != "" {
@@ -98,6 +119,21 @@ func (r *Resolver) User(args struct{ ID graphql.ID }) []*userResolver {
 		l = append(l, &userResolver{val})
 	}
 	return l
+}
+
+//======================		mutation		===============================
+
+func (r *Resolver) CreateDevice(args *struct {
+	Device *deviceInput
+}) *deviceResolver {
+
+	device := &x_device{
+		id:          args.Device.Id,
+		device_uuid: args.Device.Device_uuid,
+	}
+
+	deviceData[device.id] = device
+	return &deviceResolver{deviceData[device.id]}
 }
 
 //==================		User		===========================
