@@ -6,7 +6,7 @@ import (
 
 	"github.com/neelance/graphql-go"
 	"github.com/neelance/graphql-go/relay"
-	"github.com/aatishrana/GraphQLTesting/xShowroom"
+	"github.com/AmanPatelcubastion/xShowroomGo"
 )
 
 var schema *graphql.Schema
@@ -22,7 +22,7 @@ func main() {
 
 	http.Handle("/query", &relay.Handler{Schema: schema})
 
-	log.Fatal(http.ListenAndServe(":8090", nil))
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }
 
 var page = []byte(`
