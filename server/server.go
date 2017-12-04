@@ -18,8 +18,6 @@ func init() {
 
 func main() {
 
-	xShowroom.Connect()
-
 	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write(page)
 	}))

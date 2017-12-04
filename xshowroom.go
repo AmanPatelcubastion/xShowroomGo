@@ -41,11 +41,6 @@ package xShowroom
 
 import (
 	"github.com/neelance/graphql-go"
-	"log"
-	_ "github.com/go-sql-driver/mysql"
-
-	"github.com/jinzhu/gorm"
-	"fmt"
 )
 
 var Schema = `
@@ -136,7 +131,7 @@ var Schema = `
       id: ID!
       name: String!
       group: String!
-      relprogroups: [RelatedProductGroupInput!]!
+      relprogroups: [RelatedProductGroupInput!]
    }
 
     type RelatedProductGroup {
@@ -148,7 +143,7 @@ var Schema = `
     input RelatedProductGroupInput {
       id: ID!
       grouptype: String!
-      product: [ProductInput!]!
+      product: [ProductInput!]
    }
 
 #    type Product_RelatedProductGroup {              #InterTable
@@ -179,32 +174,32 @@ type userInput struct {
 
 type x_device struct {
 	id          graphql.ID
-	device_uuid string                  `json:"device_uuid,omitempty"`
-	user        *x_user                 `json:"user"`
+	device_uuid string
+	user        *x_user
 }
 
 type deviceInput struct {
 	Id          graphql.ID
-	Device_uuid string                   `json:"device_uuid,omitempty"`
+	Device_uuid string
 }
 
 type x_account struct {
-	id     graphql.ID
-	name   string
-	acctype   string
-	leads    []*x_lead
+	id      graphql.ID
+	name    string
+	acctype string
+	leads   []*x_lead
 }
 
 type accountInput struct {
-	Id     graphql.ID
-	Name   string
-	Acctype   string
-	Leads    *[]leadInput
+	Id      graphql.ID
+	Name    string
+	Acctype string
+	Leads   *[]leadInput
 }
 
 type x_lead struct {
-	id     graphql.ID
-	name   string
+	id       graphql.ID
+	name     string
 	location string
 }
 
@@ -213,6 +208,7 @@ type leadInput struct {
 	Name     string
 	Location string
 }
+
 
 type x_product struct {
 	id     graphql.ID
@@ -225,7 +221,7 @@ type productInput struct {
 	ID     graphql.ID
 	Name   string
 	Group string
-	Relprogroups  []relatedproductgroupInput                `gorm:"many2many:product_relatedproductgroup;"`
+	Relprogroups  *[]relatedproductgroupInput                `gorm:"many2many:product_relatedproductgroup;"`
 }
 
 type x_related_product_group struct {
@@ -237,7 +233,7 @@ type x_related_product_group struct {
 type relatedproductgroupInput struct {
 	ID     graphql.ID
 	Grouptype string
-	Product  []productInput                                  `gorm:"many2many:product_relatedproductgroup;"`
+	Product  *[]productInput                                  `gorm:"many2many:product_relatedproductgroup;"`
 }
 
 //type x_product_related_product_group struct {
@@ -246,36 +242,6 @@ type relatedproductgroupInput struct {
 //	relatedproductgroupid     graphql.ID
 //}
 
-var db *gorm.DB
-var err error
-func Connect(){
-	db,err=gorm.Open("mysql","root:password@/graphql_db?charset=utf8&parseTime=True&loc=Local")
-	//db,err:=gorm.Open("postgres","user=aman password=password dbname=test1 sslmode=disable")
-
-	if err!=nil{
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	err = db.DB().Ping()
-	if err != nil {
-		log.Fatal(err)
-	}else{
-		fmt.Println("connected")
-	}
-
-	db.SingularTable(true)
-	db.DropTableIfExists(&productInput{},&relatedproductgroupInput{})
-	db.CreateTable(&productInput{},&relatedproductgroupInput{})
-}
-
-func (productInput) TableName() string {
-	return "x_product"
-}
-
-func (relatedproductgroupInput) TableName() string {
-	return "x_related_product_group"
-}
 
 //========================		Sample Data		======================================
 var devices = []*x_device{
@@ -546,6 +512,7 @@ func (r *Resolver) RelatedProductGroup(args struct{ ID graphql.ID }) []*relatedp
 
 //======================		Mutation	methods		===============================
 
+
 func (r *Resolver) CreateDevice(args *struct {
 	Device *deviceInput
 }) *deviceResolver {
@@ -563,12 +530,20 @@ func (r *Resolver) CreateUser(args *struct {
 	User *userInput
 }) *userResolver {
 
+	var deviceId graphql.ID
+	var deviceUuid string
+
+	if args.User.Device != nil {
+		deviceId = args.User.Device.Id
+		deviceUuid = args.User.Device.Device_uuid
+	}
+
 	user := &x_user{
 		id:   args.User.Id,
 		name: args.User.Name,
 		device: &x_device{
-			id:          args.User.Device.Id,
-			device_uuid: args.User.Device.Device_uuid,
+			id:          deviceId,
+			device_uuid: deviceUuid,
 		},
 	}
 
@@ -581,9 +556,9 @@ func (r *Resolver) CreateLead(args *struct {
 }) *leadResolver {
 
 	lead := &x_lead{
-		id:          args.Lead.Id,
-		name:        args.Lead.Name,
-		location:    args.Lead.Location,
+		id:       args.Lead.Id,
+		name:     args.Lead.Name,
+		location: args.Lead.Location,
 	}
 
 	leadData[lead.id] = lead
@@ -595,19 +570,21 @@ func (r *Resolver) CreateAccount(args *struct {
 }) *accountResolver {
 
 	var createdlead []*x_lead
-	for _,v:=range *args.Account.Leads{
-		createdlead=append(createdlead,&x_lead{
-			id:   v.Id,
-			name:   v.Name,
-			location:   v.Location,
-		},)
+	if args.Account.Leads != nil {
+		for _, v := range *args.Account.Leads {
+			createdlead = append(createdlead, &x_lead{
+				id:       v.Id,
+				name:     v.Name,
+				location: v.Location,
+			}, )
+		}
 	}
 
 	account := &x_account{
-		id:   args.Account.Id,
-		name: args.Account.Name,
+		id:      args.Account.Id,
+		name:    args.Account.Name,
 		acctype: args.Account.Acctype,
-		leads: createdlead,
+		leads:   createdlead,
 	}
 
 	accountData[account.id] = account
@@ -619,11 +596,13 @@ func (r *Resolver) CreateProduct(args *struct {
 }) *productResolver {
 
 	var createdRelatedproductgroup []*x_related_product_group
-	for _,v:=range args.Product.Relprogroups{
-		createdRelatedproductgroup=append(createdRelatedproductgroup,&x_related_product_group{
-			id:   v.ID,
-			grouptype:   v.Grouptype,
-		},)
+	if args.Product.Relprogroups != nil {
+		for _, v := range *args.Product.Relprogroups {
+				createdRelatedproductgroup = append(createdRelatedproductgroup, &x_related_product_group{
+					id:        v.ID,
+					grouptype: v.Grouptype,
+				}, )
+		}
 	}
 
 	product := &x_product{
@@ -642,14 +621,15 @@ func (r *Resolver) CreateRelatedProductGroup(args *struct {
 }) *relatedproductgroupResolver {
 
 	var createdProduct []*x_product
-	for _,v:=range args.RelatedProductGroup.Product{
-		createdProduct=append(createdProduct,&x_product{
-			id:   v.ID,
-			name:   v.Name,
-			group:   v.Group,
-		},)
+	if args.RelatedProductGroup.Product != nil {
+		for _, v := range *args.RelatedProductGroup.Product {
+				createdProduct = append(createdProduct, &x_product{
+					id:    v.ID,
+					name:  v.Name,
+					group: v.Group,
+				}, )
+		}
 	}
-
 	relatedproductgroup := &x_related_product_group{
 		id:   args.RelatedProductGroup.ID,
 		grouptype: args.RelatedProductGroup.Grouptype,
