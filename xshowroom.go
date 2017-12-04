@@ -41,7 +41,6 @@ package xShowroom
 
 import (
 	"github.com/neelance/graphql-go"
-
 )
 
 var Schema = `
@@ -75,7 +74,7 @@ var Schema = `
 	input UserInput {
 		id: ID!
 		name: String!
-		device: DeviceInput!
+		device: DeviceInput
 	}
 
 	# The Android or I-pad device used by a user
@@ -100,7 +99,7 @@ var Schema = `
       id: ID!
       name: String!
       acctype: String!
-        leads: [LeadInput!]!
+      leads: [LeadInput!]
    }
 
     type Lead {
@@ -126,7 +125,7 @@ type x_user struct {
 type userInput struct {
 	Id     graphql.ID
 	Name   string
-	Device deviceInput
+	Device *deviceInput
 }
 
 type x_device struct {
@@ -141,22 +140,22 @@ type deviceInput struct {
 }
 
 type x_account struct {
-	id     graphql.ID
-	name   string
-	acctype   string
-	leads    []*x_lead
+	id      graphql.ID
+	name    string
+	acctype string
+	leads   []*x_lead
 }
 
 type accountInput struct {
-	Id     graphql.ID
-	Name   string
-	Acctype   string
-	Leads    []leadInput
+	Id      graphql.ID
+	Name    string
+	Acctype string
+	Leads   *[]leadInput
 }
 
 type x_lead struct {
-	id     graphql.ID
-	name   string
+	id       graphql.ID
+	name     string
 	location string
 }
 
@@ -195,39 +194,39 @@ var users = []*x_user{
 
 var leads = []*x_lead{
 	{
-		id:          "201",
-		name:        "Ford",
-		location:    "Delhi",
+		id:       "201",
+		name:     "Ford",
+		location: "Delhi",
 	},
 	{
-		id:          "202",
-		name:        "Maruti",
-		location:    "Noida",
+		id:       "202",
+		name:     "Maruti",
+		location: "Noida",
 	},
 	{
-		id:          "203",
-		name:        "Hyundai",
-		location:    "Gurgaon",
+		id:       "203",
+		name:     "Hyundai",
+		location: "Gurgaon",
 	},
 	{
-		id:          "204",
-		name:        "Honda",
-		location:    "Mumbai",
+		id:       "204",
+		name:     "Honda",
+		location: "Mumbai",
 	},
 }
 
 var accounts = []*x_account{
 	{
-		id:     "11",
-		name:   "Aatish",
+		id:      "11",
+		name:    "Aatish",
 		acctype: "admin",
-		leads:  []*x_lead{leads[0],leads[2]},
+		leads:   []*x_lead{leads[0], leads[2]},
 	},
 	{
-		id:     "102",
-		name:   "Vibhanshu",
+		id:      "102",
+		name:    "Vibhanshu",
 		acctype: "admin",
-		leads:   []*x_lead{leads[1],leads[3]},
+		leads:   []*x_lead{leads[1], leads[3]},
 	},
 	{
 		id:   "103",
@@ -266,7 +265,7 @@ func init() {
 		accountData[account.id] = account
 
 		if len(leads) > i {
-			accountData[account.id].leads = []*x_lead{leads[i],leads[i+1]} //add devices to users (temp, db joins will generate this)
+			accountData[account.id].leads = []*x_lead{leads[i], leads[i+1]} //add devices to users (temp, db joins will generate this)
 		}
 	}
 
@@ -360,12 +359,20 @@ func (r *Resolver) CreateUser(args *struct {
 	User *userInput
 }) *userResolver {
 
+	var deviceId graphql.ID
+	var deviceUuid string
+
+	if args.User.Device != nil {
+		deviceId = args.User.Device.Id
+		deviceUuid = args.User.Device.Device_uuid
+	}
+
 	user := &x_user{
 		id:   args.User.Id,
 		name: args.User.Name,
 		device: &x_device{
-			id:          args.User.Device.Id,
-			device_uuid: args.User.Device.Device_uuid,
+			id:          deviceId,
+			device_uuid: deviceUuid,
 		},
 	}
 
@@ -378,9 +385,9 @@ func (r *Resolver) CreateLead(args *struct {
 }) *leadResolver {
 
 	lead := &x_lead{
-		id:          args.Lead.Id,
-		name:        args.Lead.Name,
-		location:    args.Lead.Location,
+		id:       args.Lead.Id,
+		name:     args.Lead.Name,
+		location: args.Lead.Location,
 	}
 
 	leadData[lead.id] = lead
@@ -392,19 +399,21 @@ func (r *Resolver) CreateAccount(args *struct {
 }) *accountResolver {
 
 	var createdlead []*x_lead
-	for _,v:=range args.Account.Leads{
-		createdlead=append(createdlead,&x_lead{
-			id:   v.Id,
-			name:   v.Name,
-			location:   v.Location,
-		},)
+	if args.Account.Leads != nil {
+		for _, v := range *args.Account.Leads {
+			createdlead = append(createdlead, &x_lead{
+				id:       v.Id,
+				name:     v.Name,
+				location: v.Location,
+			}, )
+		}
 	}
 
 	account := &x_account{
-		id:   args.Account.Id,
-		name: args.Account.Name,
+		id:      args.Account.Id,
+		name:    args.Account.Name,
 		acctype: args.Account.Acctype,
-		leads: createdlead,
+		leads:   createdlead,
 	}
 
 	accountData[account.id] = account
@@ -427,7 +436,6 @@ func (r *userResolver) Device() *deviceResolver {
 	}
 	return &deviceResolver{r.user.device}
 }
-
 
 //==================		Device	fields resolvers	===========================
 func (r *deviceResolver) ID() graphql.ID {
@@ -463,8 +471,8 @@ func (r *accountResolver) Leads() []*leadResolver {
 	//return r.user.device
 
 	var l []*leadResolver
-	for _,v:=range r.account.leads{
-		l=append(l,&leadResolver{v})
+	for _, v := range r.account.leads {
+		l = append(l, &leadResolver{v})
 	}
 	return l
 }
