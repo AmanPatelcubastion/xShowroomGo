@@ -7,6 +7,7 @@ import (
 	"github.com/neelance/graphql-go"
 	"github.com/neelance/graphql-go/relay"
 	"github.com/AmanPatelcubastion/xShowroomGo"
+
 )
 
 var schema *graphql.Schema
@@ -16,6 +17,9 @@ func init() {
 }
 
 func main() {
+
+	xShowroom.Connect()
+
 	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write(page)
 	}))
