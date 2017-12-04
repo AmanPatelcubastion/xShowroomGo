@@ -41,6 +41,7 @@ package xShowroom
 
 import (
 	"github.com/neelance/graphql-go"
+
 )
 
 var Schema = `
@@ -146,18 +147,6 @@ var Schema = `
       product: [ProductInput!]
    }
 
-#    type Product_RelatedProductGroup {              #InterTable
-#      id: ID!
-#      productid:  ID!
-#      relprogroupid:  ID!
-#   }
-
-#    input Product_RelatedProductGroup {
-#      id: ID!
-#      productid:  ID!
-#      relprogroupid:  ID!
-#   }
-
 `
 //=======================		Types 		=====================================
 type x_user struct {
@@ -184,10 +173,10 @@ type deviceInput struct {
 }
 
 type x_account struct {
-	id      graphql.ID
-	name    string
-	acctype string
-	leads   []*x_lead
+	id     graphql.ID
+	name   string
+	acctype   string
+	leads    []*x_lead
 }
 
 type accountInput struct {
@@ -198,8 +187,8 @@ type accountInput struct {
 }
 
 type x_lead struct {
-	id       graphql.ID
-	name     string
+	id     graphql.ID
+	name   string
 	location string
 }
 
@@ -236,13 +225,6 @@ type relatedproductgroupInput struct {
 	Product  *[]productInput                                  `gorm:"many2many:product_relatedproductgroup;"`
 }
 
-//type x_product_related_product_group struct {
-//	id     graphql.ID
-//	productid     graphql.ID
-//	relatedproductgroupid     graphql.ID
-//}
-
-
 //========================		Sample Data		======================================
 var devices = []*x_device{
 	{
@@ -272,39 +254,39 @@ var users = []*x_user{
 
 var leads = []*x_lead{
 	{
-		id:          "201",
-		name:        "Ford",
-		location:    "Delhi",
+		id:       "201",
+		name:     "Ford",
+		location: "Delhi",
 	},
 	{
-		id:          "202",
-		name:        "Maruti",
-		location:    "Noida",
+		id:       "202",
+		name:     "Maruti",
+		location: "Noida",
 	},
 	{
-		id:          "203",
-		name:        "Hyundai",
-		location:    "Gurgaon",
+		id:       "203",
+		name:     "Hyundai",
+		location: "Gurgaon",
 	},
 	{
-		id:          "204",
-		name:        "Honda",
-		location:    "Mumbai",
+		id:       "204",
+		name:     "Honda",
+		location: "Mumbai",
 	},
 }
 
 var accounts = []*x_account{
 	{
-		id:     "11",
-		name:   "Aatish",
+		id:      "11",
+		name:    "Aatish",
 		acctype: "admin",
-		leads:  []*x_lead{leads[0],leads[2]},
+		leads:   []*x_lead{leads[0], leads[2]},
 	},
 	{
-		id:     "102",
-		name:   "Vibhanshu",
+		id:      "102",
+		name:    "Vibhanshu",
 		acctype: "admin",
-		leads:   []*x_lead{leads[1],leads[3]},
+		leads:   []*x_lead{leads[1], leads[3]},
 	},
 	{
 		id:   "103",
@@ -358,8 +340,6 @@ var productData = make(map[graphql.ID]*x_product)
 
 var relatedproductgroupData = make(map[graphql.ID]*x_related_product_group)
 
-//var intertableData = make(map[graphql.ID]*x_product_related_product_group)
-
 func init() {
 
 	// create sample data
@@ -381,10 +361,9 @@ func init() {
 
 	for i, account := range accounts {
 		accountData[account.id] = account
-		//db.Debug().Table("x_account").Create(&account)
-       //  fmt.Printf("%T",account)
+
 		if len(leads) > i {
-			accountData[account.id].leads = []*x_lead{leads[i],leads[i+1]} //add devices to users (temp, db joins will generate this)
+			accountData[account.id].leads = []*x_lead{leads[i], leads[i+1]} //add devices to users (temp, db joins will generate this)
 		}
 	}
 
@@ -511,7 +490,6 @@ func (r *Resolver) RelatedProductGroup(args struct{ ID graphql.ID }) []*relatedp
 }
 
 //======================		Mutation	methods		===============================
-
 
 func (r *Resolver) CreateDevice(args *struct {
 	Device *deviceInput
@@ -693,8 +671,8 @@ func (r *accountResolver) Leads() []*leadResolver {
 	//return r.user.device
 
 	var l []*leadResolver
-	for _,v:=range r.account.leads{
-		l=append(l,&leadResolver{v})
+	for _, v := range r.account.leads {
+		l = append(l, &leadResolver{v})
 	}
 	return l
 }
