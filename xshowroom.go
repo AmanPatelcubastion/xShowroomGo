@@ -113,6 +113,8 @@ var Schema = `
       id: ID!
       name: String!
       location: String!
+      users: User!
+      accounts: Account!
    }
 
     input LeadInput {
@@ -173,10 +175,10 @@ type deviceInput struct {
 }
 
 type x_account struct {
-	id     graphql.ID
-	name   string
-	acctype   string
-	leads    []*x_lead
+	id      graphql.ID
+	name    string
+	acctype string
+	leads   []*x_lead
 }
 
 type accountInput struct {
@@ -187,9 +189,11 @@ type accountInput struct {
 }
 
 type x_lead struct {
-	id     graphql.ID
-	name   string
+	id       graphql.ID
+	name     string
 	location string
+	users    *x_user
+	accounts *x_account
 }
 
 type leadInput struct {
@@ -198,31 +202,30 @@ type leadInput struct {
 	Location string
 }
 
-
 type x_product struct {
-	id     graphql.ID
-	name   string
-	group string
-	relprogroups  []*x_related_product_group       //     `gorm:"many2many:product_relatedproductgroup;"`
+	id           graphql.ID
+	name         string
+	group        string
+	relprogroups []*x_related_product_group //     `gorm:"many2many:product_relatedproductgroup;"`
 }
 
 type productInput struct {
-	ID     graphql.ID
-	Name   string
-	Group string
-	Relprogroups  *[]relatedproductgroupInput                `gorm:"many2many:product_relatedproductgroup;"`
+	ID           graphql.ID
+	Name         string
+	Group        string
+	Relprogroups *[]relatedproductgroupInput                `gorm:"many2many:product_relatedproductgroup;"`
 }
 
 type x_related_product_group struct {
-	id     graphql.ID
+	id        graphql.ID
 	grouptype string
-	product  []*x_product                           //    `gorm:"many2many:product_relatedproductgroup;"`
+	product   []*x_product //    `gorm:"many2many:product_relatedproductgroup;"`
 }
 
 type relatedproductgroupInput struct {
-	ID     graphql.ID
+	ID        graphql.ID
 	Grouptype string
-	Product  *[]productInput                                  `gorm:"many2many:product_relatedproductgroup;"`
+	Product   *[]productInput                                  `gorm:"many2many:product_relatedproductgroup;"`
 }
 
 //========================		Sample Data		======================================
@@ -296,35 +299,35 @@ var accounts = []*x_account{
 
 var products = []*x_product{
 	{
-		id:"90",
-		name:"Air Conditioner",
-		group:"Electronics",
+		id:    "90",
+		name:  "Air Conditioner",
+		group: "Electronics",
 	},
 	{
-		id:"91",
-		name:"Washing Machine",
-		group:"Electronics",
+		id:    "91",
+		name:  "Washing Machine",
+		group: "Electronics",
 	},
 	{
-		id:"92",
-		name:"Cricket Bat",
-		group:"Sports",
+		id:    "92",
+		name:  "Cricket Bat",
+		group: "Sports",
 	},
 	{
-		id:"94",
-		name:"Football",
-		group:"sports",
+		id:    "94",
+		name:  "Football",
+		group: "sports",
 	},
 }
 
 var relatedProductGroup = []*x_related_product_group{
 	{
-		id:"190",
-		grouptype:"Electronics",
+		id:        "190",
+		grouptype: "Electronics",
 	},
 	{
-		id:"192",
-		grouptype:"Sports",
+		id:        "192",
+		grouptype: "Sports",
 	},
 }
 
@@ -367,12 +370,20 @@ func init() {
 		}
 	}
 
+	for i, lead := range leads {
+		leadData[lead.id] = lead
+
+		if len(users) > i && i%2 == 0 {
+			leadData[lead.id].users = users[i]
+		}
+		if len(accounts) > i && i%2 != 0 {
+			leadData[lead.id].accounts = accounts[i]
+		}
+
+	}
+
 	for i, product := range products {
 		productData[product.id] = product
-	//	var temp interface{}
-	//	temp=*product
-	//	db.Debug().Table("x_product").Create(&temp)
-	//fmt.Println(*product)
 		if len(relatedProductGroup) > i {
 			productData[product.id].relprogroups = []*x_related_product_group{relatedProductGroup[i]} //add devices to users (temp, db joins will generate this)
 		}
@@ -576,17 +587,17 @@ func (r *Resolver) CreateProduct(args *struct {
 	var createdRelatedproductgroup []*x_related_product_group
 	if args.Product.Relprogroups != nil {
 		for _, v := range *args.Product.Relprogroups {
-				createdRelatedproductgroup = append(createdRelatedproductgroup, &x_related_product_group{
-					id:        v.ID,
-					grouptype: v.Grouptype,
-				}, )
+			createdRelatedproductgroup = append(createdRelatedproductgroup, &x_related_product_group{
+				id:        v.ID,
+				grouptype: v.Grouptype,
+			}, )
 		}
 	}
 
 	product := &x_product{
-		id:   args.Product.ID,
-		name: args.Product.Name,
-		group: args.Product.Group,
+		id:           args.Product.ID,
+		name:         args.Product.Name,
+		group:        args.Product.Group,
 		relprogroups: createdRelatedproductgroup,
 	}
 
@@ -601,23 +612,22 @@ func (r *Resolver) CreateRelatedProductGroup(args *struct {
 	var createdProduct []*x_product
 	if args.RelatedProductGroup.Product != nil {
 		for _, v := range *args.RelatedProductGroup.Product {
-				createdProduct = append(createdProduct, &x_product{
-					id:    v.ID,
-					name:  v.Name,
-					group: v.Group,
-				}, )
+			createdProduct = append(createdProduct, &x_product{
+				id:    v.ID,
+				name:  v.Name,
+				group: v.Group,
+			}, )
 		}
 	}
 	relatedproductgroup := &x_related_product_group{
-		id:   args.RelatedProductGroup.ID,
+		id:        args.RelatedProductGroup.ID,
 		grouptype: args.RelatedProductGroup.Grouptype,
-		product: createdProduct,
+		product:   createdProduct,
 	}
 
 	relatedproductgroupData[relatedproductgroup.id] = relatedproductgroup
 	return &relatedproductgroupResolver{relatedproductgroupData[relatedproductgroup.id]}
 }
-
 
 //==================		User fields resolvers		===========================
 
@@ -690,6 +700,20 @@ func (r *leadResolver) Location() string {
 	return r.lead.location
 }
 
+func (r *leadResolver) Users() *userResolver {
+	if r.lead.users == nil {
+		return &userResolver{&x_user{}}
+	}
+	return &userResolver{r.lead.users}
+}
+
+func (r *leadResolver) Accounts() *accountResolver {
+	if r.lead.accounts == nil {
+		return &accountResolver{&x_account{}}
+	}
+	return &accountResolver{r.lead.accounts}
+}
+
 //==================      Product       ===========================
 
 func (r *productResolver) ID() graphql.ID {
@@ -704,13 +728,12 @@ func (r *productResolver) Group() string {
 	return r.product.group
 }
 
-
 func (r *productResolver) Relprogroups() []*relatedproductgroupResolver {
 	//return r.user.device
 
 	var l []*relatedproductgroupResolver
-	for _,v:=range r.product.relprogroups{
-		l=append(l,&relatedproductgroupResolver{v})
+	for _, v := range r.product.relprogroups {
+		l = append(l, &relatedproductgroupResolver{v})
 	}
 	return l
 }
@@ -729,8 +752,8 @@ func (r *relatedproductgroupResolver) Product() []*productResolver {
 	//return r.user.device
 
 	var l []*productResolver
-	for _,v:=range r.relatedproductgroup.product{
-		l=append(l,&productResolver{v})
+	for _, v := range r.relatedproductgroup.product {
+		l = append(l, &productResolver{v})
 	}
 	return l
 }
