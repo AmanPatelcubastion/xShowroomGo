@@ -6,7 +6,7 @@ import (
 
 	"github.com/neelance/graphql-go"
 	"github.com/neelance/graphql-go/relay"
-	"github.com/aatishrana/GraphQLTesting/xShowroom"
+	"github.com/AmanPatelcubastion/xShowroomGo"
 )
 
 var schema *graphql.Schema
