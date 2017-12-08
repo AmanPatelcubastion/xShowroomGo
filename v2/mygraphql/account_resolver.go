@@ -65,9 +65,9 @@ func ResolveCreateAccount(args *struct {
 
 		for _, dev := range *args.Account.Leads {
 			if dev.Id == nil {
-				model.CreateLead(dev.Name, convertId(account.id))
+				model.CreateLead(dev.Name, "account",convertId(account.id))
 			} else {
-				model.UpdateLead(convertId(*dev.Id), dev.Name, convertId(account.id))
+				model.UpdateLead(convertId(*dev.Id), dev.Name, "account",convertId(account.id))
 			}
 		}
 
@@ -86,13 +86,13 @@ func (r *accountResolver) Name() string {
 	return r.account.name
 }
 
-//This method will run, if device is asked for
+//This method will run, if leads is asked for
 func (r *accountResolver) Leads() []*leadResolver {
 
 	var l []*leadResolver
 	if r.account != nil {
 		//if account not null get device of account from db and map
-		lead := model.GetLeadsOfAccount(convertId(r.account.id))
+		lead := model.GetLeadsofType(convertId(r.account.id))
 		for _, v := range lead {
 			l = append(l, &leadResolver{MapLead(v)})
 		}

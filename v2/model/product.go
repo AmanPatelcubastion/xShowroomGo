@@ -9,14 +9,12 @@ import (
 type Product struct {
 	Id   int        `gorm:"AUTO_INCREMENT" json:"id,omitempty"`
 	Name string        `gorm:"column:name" json:"name,omitempty"`
-//	Relatedproductgroup  []Relatedproductgroup                  `gorm:"many2many:products_relatedproductgroups;"`
 	RelatedproductgroupId []int    `gorm:"-" json:"account_id,omitempty"`
 }
 
 func GetProduct(id int) Product {
 	data := Product{}
-	database.SQL.Debug().First(&data)
-//	database.SQL.Debug().Select("products.id,products.name,relatedproductgroups.id,relatedproductgroups.name").Find(&data)
+	database.SQL.Debug().First(&data,"id=(?)",id)
 	return data
 }
 
@@ -32,17 +30,11 @@ func CreateProduct(name string, relatedproductgroupId *[]graphql.ID) Product {
 	database.SQL.Create(&data)
 
     database.SQL.Model(&Product{}).Last(&data)
-   // var ids []int
-   // newID:=
 	if *relatedproductgroupId != nil {
 		for _, v := range *relatedproductgroupId {
 			val, _ := strconv.Atoi(string(v))
 			database.SQL.Create(Product_Group{ProductId:data.Id, RelatedProductGroupId: val})
-			//ids = append(ids, val)
 		}
-
-		//for _,v:=range ids{
-		//}
 	}
 
 	return data
@@ -53,19 +45,12 @@ func UpdateProduct(id int, name string, relatedproductgroupId *[]graphql.ID) Pro
 	newData := Product{Id: id, Name: name}
 	database.SQL.Model(&oldData).Updates(newData)
 
-	//var ids []int
-
-	//newID:=*relatedproductgroupId
 	if *relatedproductgroupId != nil {
 		for _, v := range *relatedproductgroupId {
 			val, _ := strconv.Atoi(string(v))
 			database.SQL.Create(Product_Group{ProductId:id, RelatedProductGroupId: val})
+			}
 
-			//ids = append(ids, val)
-		}
-
-		//for _,v:=range ids{
-		//}
 	}
 
 	return newData

@@ -9,7 +9,6 @@ import (
 type Relatedproductgroup struct {
 	Id   int        `gorm:"AUTO_INCREMENT" json:"id,omitempty"`
 	GroupType string        `gorm:"column:group_type" json:"name,omitempty"`
-//	Product  []Product                           `gorm:"many2many:products_relatedproductgroups;"`
 	ProductId []int         `gorm:"-" json:"account_id,omitempty"`
 }
 
@@ -44,7 +43,6 @@ func CreateRelatedProductGroup(grouptype string, productId *[]graphql.ID) Relate
 	for _,v:=range ids{
 		database.SQL.Create(Product_Group{RelatedProductGroupId:data.Id, ProductId: v})
 	}
-
 
 	return data
 }
