@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/aatishrana/GraphQLTesting/xShowroom/v2/database"
+	"github.com/AmanPatelcubastion/xShowroomGo/v2/database"
 )
 
 type User struct {
@@ -35,7 +35,9 @@ func UpdateUser(id int, name string) User {
 }
 
 func GetUserOfDevice(deviceId int) User {
-	data := User{Id: 1, Name: "join likhna h"}
+	data := User{}
+    database.SQL.Model(&User{}).Select("users.id,users.name").Joins("left join devices on devices.user_id = users.id").Scan(&data)
+	//data := User{Id: 1, Name: "join likhna h"}
 	//database.SQL.First(&data, "user_id", userId)
 	return data
 }

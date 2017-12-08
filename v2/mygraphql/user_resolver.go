@@ -2,7 +2,7 @@ package mygraphql
 
 import (
 	"github.com/neelance/graphql-go"
-	"github.com/aatishrana/GraphQLTesting/xShowroom/v2/model"
+	"github.com/AmanPatelcubastion/xShowroomGo/v2/model"
 	"strconv"
 )
 

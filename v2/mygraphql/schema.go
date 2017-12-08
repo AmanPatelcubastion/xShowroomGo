@@ -10,12 +10,22 @@ var Schema = `
 	type Query {
 		user(id: ID!) : [User]!
 		device(id: ID!) : [Device]!
+        account(id: ID!) : [Account]!
+		lead(id: ID!) : [Lead]!
+        product(id: ID!) : [Product]!
+        relatedproductgroup(id: ID!) : [Relatedproductgroup]!
+
 	}
 
 	# The mutation type, represents all updates we can make to our data
 	type Mutation {
 		createDevice(device: DeviceInput!): Device
 		createUser(user: UserInput!): User
+        createLead(lead: LeadInput!): Lead
+        createAccount(account: AccountInput!): Account
+        createProduct(product: ProductInput!): Product
+        createRelatedproductgroup(relatedproductgroup: RelatedproductgroupInput!): Relatedproductgroup
+
 	}
 
 	# The individual using xShowroom application
@@ -23,6 +33,8 @@ var Schema = `
 		id: ID!
 		name: String!
 		device: Device!
+     #  leads: [Lead!]!
+
 	}
 	input UserInput {
 		id: ID
@@ -40,4 +52,55 @@ var Schema = `
 		id: ID
 		device_uuid: String!
 	}
+
+    type Account {
+      id: ID!
+      name: String!
+      leads: [Lead!]!
+   }
+
+    input AccountInput {
+      id: ID
+      name: String!
+      leads: [LeadInput!]
+   }
+
+    type Lead {
+      id: ID!
+      name: String!
+      accounts: Account!
+	#	user: User!
+
+   }
+
+    input LeadInput {
+      id: ID
+      name: String!
+   }
+
+    type Product {
+      id: ID!
+      name: String!
+      relatedproductgroups: [Relatedproductgroup!]!
+   }
+
+    input ProductInput {
+      id: ID
+      name: String!
+      relatedproductgroupids: [ID!]
+    #  relatedproductgroups: [RelatedproductgroupInput!]
+   }
+
+    type Relatedproductgroup {
+      id: ID!
+      grouptype: String!
+      products: [Product!]!
+   }
+
+    input RelatedproductgroupInput {
+      id: ID
+      grouptype: String!
+      productids: [ID!]
+     # products: [ProductInput!]
+   }
 `

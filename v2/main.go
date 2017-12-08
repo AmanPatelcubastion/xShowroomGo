@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"github.com/neelance/graphql-go"
 	"github.com/neelance/graphql-go/relay"
-	"github.com/aatishrana/GraphQLTesting/xShowroom/v2/mygraphql"
-	"github.com/aatishrana/GraphQLTesting/xShowroom/v2/database"
-	"github.com/aatishrana/GraphQLTesting/xShowroom/v2/model"
+	"github.com/AmanPatelcubastion/xShowroomGo/v2/mygraphql"
+	"github.com/AmanPatelcubastion/xShowroomGo/v2/database"
+	"github.com/AmanPatelcubastion/xShowroomGo/v2/model"
 )
 
 var schema *graphql.Schema
@@ -18,8 +18,8 @@ func init() {
 
 func main() {
 
-	database.Connect("root", "", "localhost", 3306, "xshowroomsample")
-	database.SQL.AutoMigrate(&model.User{}, &model.Device{})
+	database.Connect("root", "password", "localhost", 3306, "xshowroomsample")
+	database.SQL.AutoMigrate(&model.User{}, &model.Device{},&model.Account{},&model.Lead{},&model.Product{},&model.Relatedproductgroup{},&model.Product_Group{})
 
 
 	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
