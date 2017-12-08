@@ -10,13 +10,18 @@ import (
 type lead struct {
 	id     graphql.ID
 	name   string
+	leadType string
+	typeID		graphql.ID
 	accounts *account
+	user     *user
 }
 
 //struct for upserting
 type leadInput struct {
 	Id     *graphql.ID
 	Name   string
+	LeadType *string
+	TypeID		*graphql.ID
 }
 
 //struct for response
@@ -47,12 +52,23 @@ func ResolveCreateLead(args *struct {
 
 	var lead = &lead{}
 
-	if args.Lead.Id == nil {
+	if args.Lead.Id == nil{
 		//create device
-		lead = MapLead(model.CreateLead(args.Lead.Name, -1)) //new device created set userId null
+		if args.Lead.LeadType==nil && args.Lead.TypeID==nil{
+			lead = MapLead(model.CreateLead(args.Lead.Name, "",-1)) //new device created set userId null
+
+		}else {
+			lead = MapLead(model.CreateLead(args.Lead.Name, *args.Lead.LeadType,convertId(*args.Lead.TypeID))) //new device created set userId null
+		}
 	} else {
 		//update device
-		lead = MapLead(model.UpdateLead(convertId(*args.Lead.Id), args.Lead.Name, -1)) //device updated keep userId whatever it was
+		if args.Lead.LeadType==nil && args.Lead.TypeID==nil{
+			lead = MapLead(model.UpdateLead(convertId(*args.Lead.Id), args.Lead.Name,"",-1)) //device updated keep userId whatever it was
+		}else {
+			lead = MapLead(model.UpdateLead(convertId(*args.Lead.Id), args.Lead.Name, *args.Lead.LeadType,convertId(*args.Lead.TypeID))) //device updated keep userId whatever it was
+
+		}
+
 	}
 
 	return &leadResolver{lead}
@@ -68,6 +84,14 @@ func (r *leadResolver) Name() string {
 	return r.lead.name
 }
 
+func (r *leadResolver) LeadType() string {
+	return r.lead.leadType
+}
+
+func (r *leadResolver) TypeID() graphql.ID {
+	return r.lead.typeID
+}
+
 //This method will run, if device is asked for
 func (r *leadResolver) Accounts() *accountResolver {
 
@@ -77,6 +101,16 @@ func (r *leadResolver) Accounts() *accountResolver {
 		return &accountResolver{MapAccount(account)}
 	}
 	return &accountResolver{r.lead.accounts}
+}
+
+func (r *leadResolver) User() *userResolver {
+
+	if r.lead != nil {
+		//if device not null get user of device from db and map
+		user := model.GetUserOfLead(convertId(r.lead.id))
+		return &userResolver{MapUser(user)}
+	}
+	return &userResolver{r.lead.user}
 }
 
 //=================			mapper methods			==============================
@@ -90,6 +124,8 @@ func MapLead(modelLead model.Lead) *lead {
 	lead := lead{
 		id:   graphql.ID(strconv.Itoa(modelLead.Id)),
 		name: modelLead.Name,
+		leadType:modelLead.LeadType,
+		typeID:graphql.ID(strconv.Itoa(modelLead.TypeId)),
 	}
 	return &lead
 }

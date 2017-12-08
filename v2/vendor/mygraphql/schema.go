@@ -33,13 +33,14 @@ var Schema = `
 		id: ID!
 		name: String!
 		device: Device!
-     #  leads: [Lead!]!
+        leads: [Lead!]!
 
 	}
 	input UserInput {
 		id: ID
 		name: String!
 		device: DeviceInput
+		leads: [LeadInput!]
 	}
 
 	# The Android or I-pad device used by a user
@@ -68,14 +69,18 @@ var Schema = `
     type Lead {
       id: ID!
       name: String!
+      leadType: String!
+      typeId: ID!
       accounts: Account!
-	#	user: User!
+      user: User!
 
    }
 
     input LeadInput {
       id: ID
       name: String!
+      leadType: String
+      typeId: ID
    }
 
     type Product {
