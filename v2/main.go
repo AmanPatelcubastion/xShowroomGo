@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"github.com/neelance/graphql-go"
 	"github.com/neelance/graphql-go/relay"
-	"github.com/KiranKanadeCubastion/xShowroomGo/v2/mygraphql"
-	"github.com/KiranKanadeCubastion/xShowroomGo/v2/database"
-	"github.com/KiranKanadeCubastion/xShowroomGo/v2/model"
+	"mygraphql"
+	"database"
+	"model"
 )
 
 var schema *graphql.Schema
