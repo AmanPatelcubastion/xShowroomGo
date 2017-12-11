@@ -92,7 +92,7 @@ func (r *accountResolver) Leads() []*leadResolver {
 	var l []*leadResolver
 	if r.account != nil {
 		//if account not null get device of account from db and map
-		lead := model.GetLeadsofType(convertId(r.account.id))
+		lead := model.GetLeadsofType(convertId(r.account.id),"account")
 		for _, v := range lead {
 			l = append(l, &leadResolver{MapLead(v)})
 		}

@@ -97,7 +97,7 @@ func (r *leadResolver) Accounts() *accountResolver {
 
 	if r.lead != nil {
 		//if device not null get user of device from db and map
-		account := model.GetAccountOfLead(convertId(r.lead.id))
+		account := model.GetAccountOfLead(convertId(r.lead.id),"account")
 		return &accountResolver{MapAccount(account)}
 	}
 	return &accountResolver{r.lead.accounts}
@@ -107,7 +107,7 @@ func (r *leadResolver) User() *userResolver {
 
 	if r.lead != nil {
 		//if device not null get user of device from db and map
-		user := model.GetUserOfLead(convertId(r.lead.id))
+		user := model.GetUserOfLead(convertId(r.lead.id),"user")
 		return &userResolver{MapUser(user)}
 	}
 	return &userResolver{r.lead.user}

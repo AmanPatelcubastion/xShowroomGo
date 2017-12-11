@@ -63,10 +63,10 @@ func GetLeadsOfUser(userId int) []Lead {
 }*/
 
 
-func GetLeadsofType (typeId int) []Lead{
+func GetLeadsofType (typeId int, leadType string) []Lead{
 
 	var data []Lead
-	database.SQL.Debug().Find(&data, "type_id = (?)", typeId)
+	database.SQL.Debug().Where("lead_type=?",leadType).Find(&data, "type_id = (?)", typeId)
 
 	return data
 }

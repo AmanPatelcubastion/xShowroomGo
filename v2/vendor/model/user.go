@@ -58,10 +58,11 @@ func GetUserOfDevice(deviceId int) User {
 	return data
 }
 
-func GetUserOfLead(leadlId int) User {
+func GetUserOfLead(leadlId int,leadType string) User {
 	data :=User{}
 
-	database.SQL.Model(&User{}).Joins("inner join leads on leads.type_id = users.id").Where("leads.id=?",leadlId).Scan(&data)
+	database.SQL.Model(&User{}).Joins("inner join leads on leads.type_id = users.id").
+		Where("leads.id=? && leads.lead_type=?",leadlId,leadType).Scan(&data)
 
 	return data
 }

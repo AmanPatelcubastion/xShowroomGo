@@ -34,11 +34,10 @@ func UpdateAccount(id int, name string) Account {
 	return newData
 }
 
-func GetAccountOfLead(leadlId int) Account {
+func GetAccountOfLead(leadlId int,leadType string) Account {
 	data :=Account{}
 
-	database.SQL.Model(&Account{}).Select("accounts.id,accounts.name").Joins("left join leads on leads.account_id = accounts.id").Where("leads.id=?",leadlId).Scan(&data)
-	//data := Account{Id: 1, Name: "join likhna h"}
-	//database.SQL.First(&data, "user_id", userId)
+	database.SQL.Model(&Account{}).Select("accounts.id,accounts.name").Joins("inner join leads on" +
+		" leads.type_id = accounts.id").Where("leads.id=? && leads.lead_type=?",leadlId,leadType).Scan(&data)
 	return data
 }
