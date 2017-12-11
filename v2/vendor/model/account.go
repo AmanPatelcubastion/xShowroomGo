@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/AmanPatelcubastion/xShowroomGo/v2/database"
+	"database"
 )
 
 type Account struct {

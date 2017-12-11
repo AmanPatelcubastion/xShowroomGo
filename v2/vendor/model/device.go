@@ -4,6 +4,7 @@ import (
 	"github.com/AmanPatelcubastion/xShowroomGo/v2/database"
  )
 
+
 type Device struct {
 	Id     int        `gorm:"AUTO_INCREMENT" json:"id,omitempty"`
 	UUID   string        `gorm:"column:uuid" json:"uuid,omitempty"`
