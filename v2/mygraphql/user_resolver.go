@@ -94,6 +94,19 @@ func ResolveCreateUser(args *struct {
 	return &userResolver{user}
 }
 
+func ResolveDeleteUser(args struct{ ID graphql.ID }) (response *userResolver) {
+
+	if args.ID != "" {
+		response = &userResolver{MapUser(
+			model.DeleteUser(convertId(args.ID)),
+		)}
+		return response
+	}
+
+	return response
+}
+
+
 //==================		fields resolvers		===========================
 
 func (r *userResolver) ID() graphql.ID {

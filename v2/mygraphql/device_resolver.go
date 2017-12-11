@@ -57,6 +57,7 @@ func ResolveCreateDevice(args *struct {
 	return &deviceResolver{device}
 }
 
+
 //==================		fields resolvers		===========================
 
 func (r *deviceResolver) ID() graphql.ID {

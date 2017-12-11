@@ -25,6 +25,7 @@ var Schema = `
         createAccount(account: AccountInput!): Account
         createProduct(product: ProductInput!): Product
         createRelatedproductgroup(relatedproductgroup: RelatedproductgroupInput!): Relatedproductgroup
+        deleteUser(id:ID!) : User
 
 	}
 

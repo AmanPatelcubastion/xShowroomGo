@@ -41,6 +41,11 @@ func (r *Resolver) CreateUser(args *struct {
 	return ResolveCreateUser(args)
 }
 
+func (r *Resolver) DeleteUser(args struct{ ID graphql.ID }) *userResolver {
+	return ResolveDeleteUser(args)
+}
+
+
 func (r *Resolver) CreateDevice(args *struct {
 	Device *deviceInput
 }) *deviceResolver {

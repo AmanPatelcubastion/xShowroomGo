@@ -46,6 +46,7 @@ func UpdateDevice(id int, uuid string, userId int) Device {
 	return newData
 }
 
+
 func GetDeviceOfUser(userId int) Device {
 	data := Device{}
 	database.SQL.Debug().First(&data, "user_id = (?)", userId)
