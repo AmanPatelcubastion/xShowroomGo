@@ -2,7 +2,7 @@ package model
 
 import (
 	"github.com/AmanPatelcubastion/xShowroomGo/v2/database"
-)
+ )
 
 type Device struct {
 	Id     int        `gorm:"AUTO_INCREMENT" json:"id,omitempty"`
