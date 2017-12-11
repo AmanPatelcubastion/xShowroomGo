@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/aatishrana/GraphQLTesting/xShowroom/v2/database"
+	"github.com/KiranKanadeCubastion/xShowroomGo/v2/database"
 )
 
 type Device struct {

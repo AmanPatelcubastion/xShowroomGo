@@ -1,11 +1,11 @@
 package model
 
 import (
-	"github.com/aatishrana/GraphQLTesting/xShowroom/v2/database"
+	"github.com/KiranKanadeCubastion/xShowroomGo/v2/database"
 )
 
 type User struct {
-	Id   int        `gorm:"AUTO_INCREMENT" json:"id,omitempty"`
+	Id   int           `gorm:"AUTO_INCREMENT" json:"id,omitempty"`
 	Name string        `gorm:"column:name" json:"name,omitempty"`
 }
 
@@ -35,7 +35,8 @@ func UpdateUser(id int, name string) User {
 }
 
 func GetUserOfDevice(deviceId int) User {
-	data := User{Id: 1, Name: "join likhna h"}
-	//database.SQL.First(&data, "user_id", userId)
+	data := User{}
+	database.SQL.Debug().Model(&User{}).Joins("inner join devices on devices.user_id = users.id").
+		Where("devices.id = ?", deviceId).Scan(&data)
 	return data
 }
