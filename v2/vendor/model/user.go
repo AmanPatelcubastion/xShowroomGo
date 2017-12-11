@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/AmanPatelcubastion/xShowroomGo/v2/database"
 	"fmt"
 	"database"
 )
