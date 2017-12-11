@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/AmanPatelcubastion/xShowroomGo/v2/database"
+"database"
  )
 
 
@@ -51,5 +51,7 @@ func UpdateDevice(id int, uuid string, userId int) Device {
 func GetDeviceOfUser(userId int) Device {
 	data := Device{}
 	database.SQL.Debug().First(&data, "user_id = (?)", userId)
+	//database.SQL.Model(&User{}).Related(&data, "Device")
+
 	return data
 }
