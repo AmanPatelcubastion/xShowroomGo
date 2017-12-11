@@ -18,7 +18,7 @@ func init() {
 
 func main() {
 
-	database.Connect("root", "", "localhost", 3306, "xshowroomsample")
+	database.Connect("root", "password", "localhost", 3306, "xshowroomsample")
 	database.SQL.AutoMigrate(&model.User{}, &model.Device{}, &model.Account{}, &model.Lead{}, &model.Product{}, &model.Relatedproductgroup{}, &model.Product_Group{})
 
 	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
