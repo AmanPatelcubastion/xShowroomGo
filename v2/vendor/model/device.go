@@ -1,8 +1,9 @@
 package model
 
 import (
-	"github.com/KiranKanadeCubastion/xShowroomGo/v2/database"
-)
+	"github.com/AmanPatelcubastion/xShowroomGo/v2/database"
+ )
+
 
 type Device struct {
 	Id     int        `gorm:"AUTO_INCREMENT" json:"id,omitempty"`
@@ -45,6 +46,7 @@ func UpdateDevice(id int, uuid string, userId int) Device {
 	database.SQL.Model(&oldData).Updates(newData)
 	return newData
 }
+
 
 func GetDeviceOfUser(userId int) Device {
 	data := Device{}

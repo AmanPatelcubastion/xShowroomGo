@@ -4,6 +4,7 @@ import (
 	"github.com/neelance/graphql-go"
 	"github.com/KiranKanadeCubastion/xShowroomGo/v2/model"
 	"strconv"
+	"fmt"
 )
 
 //struct for graphql
@@ -11,6 +12,7 @@ type user struct {
 	id     graphql.ID
 	name   string
 	device *device
+	leads   []*lead
 }
 
 //struct for upserting
@@ -18,6 +20,7 @@ type userInput struct {
 	Id     *graphql.ID
 	Name   string
 	Device *deviceInput
+	Leads *[]leadInput
 }
 
 //struct for response
@@ -72,8 +75,37 @@ func ResolveCreateUser(args *struct {
 		}
 	}
 
+	if user != nil && args.User.Leads != nil {
+
+		//	user.leads = [len(*args.Account.Leads)]lead
+
+		fmt.Println(len(*args.User.Leads))
+
+		for _, dev := range *args.User.Leads {
+			if dev.Id == nil {
+				model.CreateLead(dev.Name, "user",convertId(user.id))
+			} else {
+				model.UpdateLead(convertId(*dev.Id), dev.Name,"user" ,convertId(user.id))
+			}
+		}
+
+	}
+
 	return &userResolver{user}
 }
+
+func ResolveDeleteUser(args struct{ ID graphql.ID }) (response *userResolver) {
+
+	if args.ID != "" {
+		response = &userResolver{MapUser(
+			model.DeleteUser(convertId(args.ID)),
+		)}
+		return response
+	}
+
+	return response
+}
+
 
 //==================		fields resolvers		===========================
 
@@ -94,6 +126,24 @@ func (r *userResolver) Device() *deviceResolver {
 		return &deviceResolver{MapDevice(device)}
 	}
 	return &deviceResolver{r.user.device}
+}
+
+func (r *userResolver) Leads() []*leadResolver {
+
+	var l []*leadResolver
+	if r.user != nil {
+		//if account not null get device of account from db and map
+		lead := model.GetLeadsofType(convertId(r.user.id))
+		for _, v := range lead {
+			l = append(l, &leadResolver{MapLead(v)})
+		}
+		return l
+	}
+
+	for _, v := range r.user.leads {
+		l = append(l, &leadResolver{v})
+	}
+	return l
 }
 
 //=================			mapper methods			==============================
